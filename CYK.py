@@ -1,0 +1,45 @@
+def is_in_cartesian_prod(x, y, r):
+    return r in [i + j for i in x.split(',') for j in y.split(',')]
+
+def accept_cyk(w, G, S):
+    if w == 'ε':
+        return 'ε' in G[S]
+    n = len(w)
+    DP_table = [[''] * n for _ in range(n)]
+    
+    # Initialise DP Table with rules of the form A -> a
+    for i in range(n):
+        for lhs in G.keys(): 
+            for rhs in G[lhs]:
+                if w[i] == rhs:
+                    DP_table[i][i] = lhs if not DP_table[i][i] else DP_table[i][i] + ',' + lhs
+    
+    # Fill in the DP Table for subsequences of length 2 to n
+    for l in range(2, n + 1):
+        for i in range(n - l + 1):
+            j = i + l - 1
+            for k in range(i, j): 
+                for lhs in G.keys():
+                    for rhs in G[lhs]:
+                        if is_in_cartesian_prod(DP_table[i][k], DP_table[k + 1][j], rhs):
+                            DP_table[i][j] + ',' + lhs
+                            DP_table[i][j] = lhs if not DP_table[i][j] else DP_table[i][j]
+    
+    # Check if Start Symbol is in the DP_Table[0][n-1]
+    return S in DP_table[0][n - 1]
+
+# Main code
+grammar = {
+    'NP': ['Det', 'Nom'],
+    'Nom': ['AP', 'Nom'],
+    'AP': ['Adv', 'A'],
+    'Det': ['a', 'an'],
+    'Adv': ['very', 'extremely'],
+    'A': ['heavy', 'orange', 'tall'],
+    'Nom': ['book', 'orange', 'man']
+}
+input_string = "A very heavy book"
+start = 'NP'
+
+result = accept_cyk(input_string, grammar, start)
+print("Result of CYK algorithm:", result)
